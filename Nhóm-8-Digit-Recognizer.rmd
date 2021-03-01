@@ -1,0 +1,379 @@
+---
+title: "Đề Tài Digit Recognizer"
+author: "Nhóm 8 (Nguyễn Quang Nhật, Trần Trọng Nghĩa, Vũ Anh Thái Dương, Đỗ Viết Hải)"
+date: "2021/01/25"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    self_contained: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+```
+### **1. Tóm tắt đề tài Nhận dạng chữ số viết tay (https://www.kaggle.com/c/digit-recognizer) **
+
+  Trong đề tài này, mục tiêu là xác định chính xác các chữ số từ bộ dữ liệu gồm hàng chục ngàn hình ảnh viết tay từ bộ dữ liệu gốc MNIST được chúng tôi chia thành 2 tệp train và test để thuận lợi cho quá trình huấn luyện và dự đoán. 
+  
+  Chúng tôi thử nghiệm huấn luyện và đưa ra dự đoán với 3 thuật toán nổi tiếng trong học máy là K-nearest neighbors(KNN), random forest và SVM. Qua thực nghiệm chúng tôi rút ra được mô hình KNN có hiệu suất dự đoán cao nhất(), sau đó đến random forest và cuối cùng là SVM. Qua thực nghiệm chúng tôi cũng nhận thấy rằng các thuật toán gặp khó khăn ở các chữ số 8 và 3 hoặc 9 và 4.
+  Link mô tả kết quả trên Kagger: https://www.kaggle.com/haidoviet/digit-recognizer-k-nearest-neighbors-knn
+  
+### **2. Giới thiệu **
+
+  Nhận dạng chữ số viết tay là cần thiết và được ứng dụng rộng rãi trong nhiều lĩnh vực như nhận dạng các chữ số trên chi phiếu ngân hàng, mã số trên bì thư của dịch vụ bưu chính, hay các chữ số trên các biểu mẫu nói chung. Vấn đề nhận dạng chữ viết tay là một thách thức lớn đối với các nhà nghiên cứu. Bài toán lớn luôn đặt ra vì sự phức tạp của việc nhận dạng chữ viết phụ thuộc nhiều vào phong cách viết và cách thể hiện ngôn ngữ của người viết. Chúng ta không thể luôn luôn viết một ký tự chính xác theo cùng một cách. Do vậy, xây dựng hệ thống nhận dạng chữ viết có thể nhận dạng bất cứ ký tự nào một cách đáng tin cậy trong tất cả các ứng dụng là điều không dễ dàng.
+  
+### **3. Dữ liệu**
+
+Input: 
+
+  Mỗi hình ảnh có chiều cao 28 pixel và chiều rộng 28 pixel, với tổng số 784 pixel. Mỗi pixel có một giá trị pixel duy nhất được liên kết với nó, biểu thị độ sáng hoặc tối của pixel đó, với số cao hơn có nghĩa là tối hơn. Giá trị pixel này là một số nguyên nằm trong khoảng từ 0 đến 255.
+  
+  Tập dữ liệu huấn luyện, (train.csv), có 785 cột. Cột đầu tiên, được gọi là "label" mang các giá trị từ 0 đến 9, là chữ số được vẽ bởi người dùng. Các cột còn lại chứa các giá trị pixel của hình ảnh. 
+  
+  Tập dữ liệu kiểm tra, (test.csv), có 784 cột chứa các giá trị pixel thể hiện độ xám của hình ảnh.
+  
+Output: 
+
+  Output của bài toán là kết quả dự đoán các chữ số trong tập test sử dụng các thuật toán: KNN, Random Forest và SVM. Kết quả là tệp csv gồm 2 cột: ImageID(từ 1-28000) và label(các chữ số từ 0-9)
+	
+### **4 Giải pháp**
+
+#### **4.1 Thuật toán KNN**
+
+  K-nearest neighbors là thuật toán học máy có giám sát, không quá khó và dễ triển khai. Thường được dùng trong các bài toán phân loại và hồi quy.
+
+  Thuật toán KNN cho rằng những dữ liệu tương tự nhau sẽ tồn tại gần nhau trong một không gian, từ đó công việc của chúng ta là sẽ tìm k điểm gần với dữ liệu cần kiểm tra nhất. Việc tìm khoảng cách giữa 2 điểm củng có nhiều công thức có thể sử dụng, tùy trường hợp mà chúng ta lựa chọn cho phù hợp. Đây là một trong các cách cơ bản để tính khoảng cách 2 điểm dữ liệu x, y có k thuộc tính:
+
+Khoảng cách Euclidean được định nghĩa như sau:
+$$\sqrt{\sum_{i=1}^{k}\left(x_{i}-y_{i}\right)^{2}}$$
+
+#### **4.2 Thuật toán SVM (Support Vector Machine)**
+
+  Support Vector Machine (SVM) là một thuật toán thuộc nhóm Supervised Learning (học có giám sát) dùng để phân chia dữ liệu (classification) thành các nhóm riêng biệt. Thuật toán để ánh xạ bộ data đó vào không gian nhiều chiều hơn ($n$ chiều), từ đó tìm ra siêu mặt phẳng (hyperplane) để phân chia.
+
+  Margin là khoảng cách giữa siêu phẳng (trong trường hợp không gian 2 chiều là đường thẳng) đến 2 điểm dữ liệu gần nhất tương ứng với 2 phân lớp. Nó được tính là khoảng cách gần nhất từ 1 điểm tới mặt đó (bất kể điểm nào trong hai classes) bằng công thức như sau:
+$$\text { margin }=\min _{n} \frac{y_{n}\left(\mathbf{w}^{T} \mathbf{x}_{n}+b\right)}{\|\mathbf{w}\|_{2}}$$
+Với $x_n$ và $y_n$ à tọa độ của một điểm dữ liệu bất kì.
+
+Bài toán tối ưu trong SVM chính là bài toán tìm $w$ và $b$ sao cho margin này đạt giá trị lớn nhất, công thức này được định nghĩa như sau:
+$$(\mathbf{w}, b)=\arg \max _{\mathbf{w}, b}\left\{\min _{n} \frac{y_{n}\left(\mathbf{w}^{T} \mathbf{x}_{n}+b\right)}{\|\mathbf{w}\|_{2}}\right\}=\arg \max _{\mathbf{w}, b}\left\{\frac{1}{\|\mathbf{w}\|_{2}} \min _{n} y_{n}\left(\mathbf{w}^{T} \mathbf{x}_{n}+b\right)\right\}$$
+#### **4.3. Thuật toán random forest**
+
+  Random forest là một thuật toán học có giám sát. Như tên gọi của nó, random forest sử dụng các cây (tree) để làm nền tảng. Random forest là một tập hợp của các decision tree, mà mỗi cây được chọn theo một thuật toán dựa vào ngẫu nhiên.
+  
+Random forest có điểm mạnh:
+
+  Random forest algorithm có thể sử dụng cho cả bài toán classification và regression.
+  
+  Random forest làm việc được với dữ liệu thiếu giá trị.
+  
+  Khi forest có nhiều cây hơn, chúng ta có thể tránh được việc **overfitting** với tập dữ liệu.
+  
+  Có thể tạo mô hình cho các giá trị phân loại.
+  
+Mã giả cho hoạt động của thuật toán random forest:
+
+  Bước 1: Chọn ngẫu nhiên “$k$” features từ tập “$m$” **features**. (lưu ý k << m).
+  
+  Bước 2: Từ tập “$k$” **features**, tính toán ra node “$d$” là tốt nhất cho node phân loại.
+  
+  Bước 3: Chia các node con theo node tốt nhất vừa tìm được.
+  
+  Bước 4: Lặp lại bước 1-3 cho đến khi đạt đến k node.
+  
+  Bước 5: Lặp lại bước 1-4 để tạo ra “$n$” cây.
+  
+Sau các bước trên, chúng ta đã tạo ra được một mô hình random rorest. Thuât toán random forest precdiction (dự đoán) sẽ được thực hiện qua các bước sau:
+
+  Bước 1: Lấy các test features và sử dụng các Cây quyết định đã tạo ra để dự đoán kết quả, lưu nó vào một danh sách.
+  
+  Bước 2: Tinh toán số lượng vote trên toàn bộ forest cho từng kết quả.
+  
+  Bước 3: Lấy kết quả có số lượng vote lớn nhất làm kết quả cuối cho mô hình.
+
+#### **4.4. Độ đo Confusion Matrix**
+
+
+  Confusion Matrix là một bảng được sử dụng để mô tả hiệu suất của một mô hình phân loại. Với các đầu ra được thể hiện trong ví dụ ở hình dưới.
+  
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("C:/Users/Admin/Desktop/LightScreen/screenshot.53.png")
+```
+
+#### ** 4.5. k-Fold Cross-Validation**
+
+
+  Cross validation là một kỹ thuật lấy mẫu để đánh giá mô hình học máy trong trường hợp dữ liệu không được dồi dào cho lắm.
+
+Tham số quan trọng trong kỹ thuật này là k, đại diện cho số nhóm mà dữ liệu sẽ được chia ra. Vì lý do đó, nó được mang tên k-fold cross-validation. Khi giá trị của k được lựa chọn, người ta sử dụng trực tiếp giá trị đó trong tên của phương pháp đánh giá. Ví dụ với k=10, phương pháp sẽ mang tên 10-fold cross-validation.
+
+  Kỹ thuật này thường bao gồm các bước như sau:
+
+    1. Xáo trộn dataset một cách ngẫu nhiên
+  
+    2. Chia dataset thành k nhóm
+
+    3. Với mỗi nhóm:
+    
+      - Sử dụng nhóm hiện tại để đánh giá hiệu quả mô hình
+      
+      - Các nhóm còn lại được sử dụng để huấn luyện mô hình
+      
+      - Huấn luyện mô hình
+      
+      - Đánh giá và sau đó hủy mô hình
+      
+      - Tổng hợp hiệu quả của mô hình dựa từ các số liệu đánh giá
+      
+  Một lưu ý quan trọng là mỗi mẫu chỉ được gán cho duy nhất một nhóm và phải ở nguyên trong nhóm đó cho đến hết quá trình. Các tiền xử lý dữ liệu như xây dựng vocabulary chỉ được thực hiện trên tập huấn luyện đã được chia chứ không được thực hiện trên toàn bộ dataset. Việc hủy mô hình sau mỗi lần đánh giá là bắt buộc, tránh trường hợp mô hình ghi nhớ nhãn của tập test trong lần đánh giá trước. Các lỗi thiết lập này dễ xảy ra và đều dẫn đến kết quả đánh giá không chính xác (thường là tích cực hơn so với thực tế).
+
+  Kết quả tổng hợp thường là trung bình của các lần đánh giá. Ngoài ra việc bổ sung thông tin về phương sai và độ lệch chuẩn vào kết quả tổng hợp cũng được sử dụng trong thực tế. 
+  
+#### **5. Thực nghiệm và kết quả**
+
+#### **5.1. Quá trình kiểm tra và tiền xử lý dữ liệu**
+
+```{r, echo=TRUE}
+library(readr)
+train <- read_csv("D:/KhaiPhaDuLieu/pro_dm/nhan_dang_chu_so_r/train.csv")
+test <- read_csv("D:/KhaiPhaDuLieu/pro_dm/nhan_dang_chu_so_r/test.csv")
+dim(train) ; dim(test)
+```
+
+
+  Tập dữ liệu train có thêm một cột, được gọi là "label", chứa "chữ số" được đại diện bởi 784 cột khác. Các cột 784 (28x28 ô) chứa giá trị từ 0 đến 255. Giá trị này cho chúng ta biết độ đậm hay nhạt của mỗi ô. Đầu tiên ta phải chuyển đổi cột "label" thành giá trị "factor".
+  
+```{r, echo=TRUE}
+train[, 1] <- as.factor(train[, 1]$label)  # As Category
+```
+
+Giá trị của các cột:
+```{r, echo=TRUE}
+head(sapply(train[1,], class))
+```
+
+  Chúng tôi nhận thấy nhiều cột có ít giá trị và hầu hết các giá trị chỉ bằng 0; Cho nên phương sai của chúng gần như bằng không. Nó không tốt cho quá trình dự đoán và chúng tôi sẽ thực hiện loại bỏ chúng.
+  
+```{r,echo=TRUE}
+train_orig <- train
+library(caret)
+nzv.data <- nearZeroVar(train[,-1],saveMetrics=T,freqCut=10000/1,uniqueCut =1/7)
+sum(nzv.data$nzv)
+```
+
+```{r, echo=TRUE}
+drop.cols <- rownames(nzv.data)[nzv.data$nzv == TRUE]
+train <- train[,!names(train) %in% drop.cols]
+```
+
+  Bây giờ, chúng ta hãy thực hiện một số phân tích để trực quan hóa dữ liệu và EDA:(Tham khảo từ nguồn: http://rstudio-pubs-static.s3.amazonaws.com/6287_c079c40df6864b34808fa7ecb71d0f36.html).
+  
+```{r, echo=TRUE}
+library(RColorBrewer)
+BNW <- c("white", "black")
+CUSTOM_BNW <- colorRampPalette(colors = BNW)
+par(mfrow = c(4, 3), pty = "s", mar = c(1, 1, 1, 1), xaxt = "n", yaxt = "n")
+images_digits_0_9 <- array(dim = c(10, 28 * 28))
+for (digit in 0:9) {
+  images_digits_0_9[digit + 1, ] <- apply(train_orig[train_orig[, 1] == digit, -1], 2, sum)
+  images_digits_0_9[digit + 1, ] <- images_digits_0_9[digit + 1, ]/max(images_digits_0_9[digit + 1, ]) * 255
+  z <- array(images_digits_0_9[digit + 1, ], dim = c(28, 28))
+  z <- z[, 28:1]
+  image(1:28, 1:28, z, main = digit, col = CUSTOM_BNW(256))
+}
+```
+
+
+  Chúng tôi nhận ra có nhiều hình mờ và các hình này khả năng bị nhầm lẫn nhiều hơn. Ví dụ: số 9 và số 4 hoặc số 8 và số 3. Điều đó có nghĩa là có khả năng cao hơn dự đoán sai về những con số như vậy. Chúng tôi sẽ khám phá điều này chi tiết hơn khi chúng tôi dự đoán tập dữ liệu của mình. Tỉ lệ của mỗi chữ số trong tập train là:
+
+```{r, echo=TRUE}
+CUSTOM_BNW_PLOT <- colorRampPalette(brewer.pal(10, "Set3"))
+LabTable <- table(train_orig$label)
+par(mfrow = c(1, 1))
+percentage <- round(LabTable/sum(LabTable) * 100)
+labels <- paste0(row.names(LabTable), " (", percentage, "%) ")
+pie(LabTable, labels = labels, col = CUSTOM_BNW_PLOT(10), main = "Percentage of Digits (Training Set)")
+```
+
+  Qua biểu đồ ta có thể nhận thấy tất cả các chữ số đều đóng góp gần như bằng nhau vào tập dữ liệu. Chúng tôi chọn KNN (K-near k-Nearest Neighbors) là mô hình đầu tiên phù hợp cho các bài toán phân loại. Hãy xem KNN hoạt động như thế nào trong Phân loại nhận dạng số. Để tăng tốc độ chạy mô hình ban đầu của chúng tôi, tôi chỉ sử dụng 10% của toàn bộ tập train (~ 4200) để đào tạo và sử dụng kích thước kết quả(label) tương tự để thực hiện đánh giá.
+  
+```{r, echo=TRUE}
+set.seed(1234)
+library(class)
+library(randomForest)
+trainIndex <- createDataPartition(train$label, p = 0.1, list = FALSE, times = 1)
+allindices <- c(1:42000)
+training <- train[trainIndex,]
+validating <- train[-trainIndex,]
+vali0_index <- allindices[! allindices %in% trainIndex]
+validIndex <- createDataPartition(validating$label, p = 0.11, list = FALSE, times = 1)
+validating <- validating[validIndex,]
+original_validindex <- vali0_index[validIndex]
+training
+validating
+```
+
+#### **5.2.Mô hình 1: FNN (Fast K-Nearest Neighbor)**
+
+##### **5.2.1. Huấn luyện tập train**
+
+  K-Nearest Neighbor (KNN) là một thuật toán không quá khó nhưng độ chính xác rất cao để giải quyết vấn đề Nhận dạng chữ số. Để dự đoán một cá thể mới, KNN tính toán Khoảng cách Euclid giữa cá thể mới và tất cả các cá thể trong toàn bộ tập huấn luyện. Sau đó, thuật toán tìm kiếm K trường hợp gần nhất (tương tự nhất) hàng đầu và đưa ra lớp có tần suất cao nhất (nhiều phiếu bầu nhất) như dự đoán. Chúng tôi sử dụng K-fold cross validation(k=5) để chọn giá trị tốt nhất cho K mang lại độ chính xác cao nhất. Tôi sử dụng gói CARET để đào tạo KNN và chọn K.
+
+```{r, echo=TRUE}
+ctrl <- trainControl(method="repeatedcv",repeats = 1, number = 5, verboseIter = T, allowParallel = T)
+knnFit <- train(label ~ ., data = training, method = "knn", trControl = ctrl)
+```
+
+```{r, echo=TRUE}
+plot(knnFit)
+```
+
+  Vì vậy, ta chọn K = 5. Qua tham khảo Tôi thấy rằng “kd-tree” là lựa chọn tốt nhất.(Thuật toán	Kd-tree dùng để tìm kiếm các dữ liệu gần, liên quan nhất (neighbouring data points) trong miền không gian 2 chiều, hoặc nhiều chiều). Sử dụng khoảng cách là trung vị(median) giữa các điểm để thực hiện phân cụm.
+  
+```{r, echo=TRUE}
+library(FNN)
+fnn.kd1 <- FNN::knn(training[,-1], validating[,-1], training$label, k=5, algorithm = c("kd_tree"))
+fnn.kd.pred1 <- as.numeric(fnn.kd1)-1
+```
+
+
+```{r, echo=TRUE}
+g <- union(fnn.kd.pred1, validating$label)
+h <- table(factor(fnn.kd.pred1, g), factor(validating$label, g))
+confusionMatrix(h)
+```
+
+  Confusion Matrix cung cấp cho chúng ta những thông tin có giá trị. Trước hết, KNN đã làm rất tốt chỉ với 10% của toàn bộ dữ liệu. Nó dự đoán bộ xác thực với độ chính xác 92,9%. Độ chính xác cao nhất thuộc về các nhãn “1”, “0” và “6”. Tuy nhiên, nó gặp khó khăn với việc dự đoán các chữ số “8”, “5” và “9”. Ví dụ: trong một số trường hợp “5” và “9”, “3” và “8” hoặc “3” và “9” bị phân loại sai. Giá trị đặc trưng (specificity value) trong Confusion Matrix cho biết mỗi chữ số bị nhầm lẫn với các nhãn khác như thế nào. Hãy xem tính đặc trưng (specificity) của chữ số “1”. Nó có giá trị thấp nhất trong số tất cả các chữ số. Có nghĩa là ~ 0,93% mô hình tính nhầm các chữ số khác là “1” (tức là chữ số không phải là 1, mà được dự đoán là 1). Ngược lại, chữ số “2” có độ đặc trưng(spensificity) cao nhất. Rất ít khả năng các chữ số khác được dự đoán sai là “2” (khi chúng thực sự không phải là số 2).
+
+  Thay đổi giá trị của k=1 để xem sự thay đổi của hiệu suất của quá trình huấn luyện.
+  
+```{r, echo=TRUE}
+library(FNN)
+fnn.kd2 <- FNN::knn(training[,-1], validating[,-1], training$label, k=1, algorithm = c("kd_tree"))
+fnn.kd.pred2 <- as.numeric(fnn.kd2)-1
+```
+
+```{r,echo=TRUE}
+i <- union(fnn.kd.pred2, validating$label)
+k <- table(factor(fnn.kd.pred2, i), factor(validating$label, i))
+confusionMatrix(k)
+```
+
+  k=1 có một sự cải thiện đáng kể cho hiệu suất của mô hình(93%). Như vậy, quá trình sử dụng k-Fold Cross-Validation để xác định K = 5 chưa thật sự là tốt nhất. Để đánh giá trực quan hơn ta cùng áp dụng mô hình trên tập test.
+
+##### **5.2.2.Dự đoán bộ thử nghiệm test**
+
+```{r, echo=TRUE}
+# KNN method at k = 5
+pc <- proc.time()
+fnn.kd <- knn(train_orig[,-1], test, train_orig$label , k=5 , algorithm = c("kd_tree"))
+proc.time() - pc
+```
+
+  Xuất kết quả
+```{r,echo=TRUE}
+submission <- data.frame(ImageId=1:nrow(test), Label=fnn.kd)
+head(submission)
+write_csv(submission, "KQ_KNN.csv") 
+```
+
+Tập kết quả của bộ dữ liệu test
+```{r,echo=TRUE}
+KQ <- read_csv("D:/KhaiPhaDuLieu/K-NN/Do_not_submit.csv")
+```
+
+Đánh giá mô hình với tập kết quả bằng Confusion Matrix
+```{r,echo=TRUE}
+z <- union(fnn.kd, KQ$Label)
+r <- table(factor(fnn.kd, z), factor(KQ$Label, z))
+confusionMatrix(r)
+```
+
+  Với k = 5 chúng tôi đạt được Accuracy = 96,67%. Như vậy chỉ có ~3,3% số các chữ số mà mô hình đoán là sai. Một chỉ số khá là tốt với mô hình đầu tiên mà chúng tôi chọn để đánh giá. Chúng ta cùng xem với k = 1 liệu hiệu suất của mô hình có được cải thiện như khi chúng ta huấn luyện tập train.
+  
+```{r,echo=TRUE}
+fnn.kd1 <- knn(train_orig[,-1], test, train_orig$label , k=1 , algorithm = c("kd_tree"))
+```
+
+```{r,echo=TRUE}
+submission1 <- data.frame(ImageId=1:nrow(test), Label=fnn.kd1)
+head(submission1)
+write_csv(submission1, "KQ_KNN_k1.csv")
+```
+
+```{r,echo=TRUE}
+a <- union(fnn.kd1, KQ$Label)
+b <- table(factor(fnn.kd1, a), factor(KQ$Label, a))
+confusionMatrix(b)
+```
+
+  Như vậy với k=1 cho ta một kết quả tối ưu hơn (97,01% số dự đoán  là đúng) so với khi ta chọn k=5 (96,67%). Nhưng quá trình huấn luyện cũng như dự đoán khá là tốn kém về mặt thời gian cũng như tài nguyên.
+  
+#### **5.3. Sử dụng mô hình Random Forest**
+
+##### **5.3.1. Quá trình huấn luyện**
+
+  Áp dụng Randomforest cho tập train với ntree=200
+
+```{r, echo=TRUE}
+pc <- proc.time()
+rf2 <- randomForest(train_orig[,-1], train_orig$label, ntree=200)
+proc.time() - pc
+```
+
+```{r, echo=TRUE}
+pred1 <- predict(rf2, newdata=train_orig)
+confusionMatrix(pred1, train_orig$label)
+```
+
+```{r,echo=TRUE}
+KQ <- read_csv("D:/KhaiPhaDuLieu/K-NN/Do_not_submit.csv")
+```
+
+  Từ quá trình huấn luyện ta sẽ thực hiện dự đoán trên tập test
+```{r, echo=TRUE}
+pred2 <- predict(rf2, newdata=test)
+```
+
+```{r, echo=TRUE}
+submission2 <- data.frame(ImageId=1:nrow(test), Label=pred2)
+head(submission2)
+write_csv(submission2, "KQ_Randomforest.csv")
+```
+
+```{r,echo=TRUE}
+c <- union(pred2, KQ$Label)
+d <- table(factor(pred2, c), factor(KQ$Label, c))
+confusionMatrix(d)
+```
+
+  Với mô hình Random Forest cho chúng tôi Accuracy = 96,66% số dự đoán trên tập test là đúng. Thấp hơn một chút so với mô hình KNN. Nhưng thời gian thì tối ưu hơn mô hình KNN một cách đáng kể
+  
+### **6. Kết luận**
+
+  Qua bài tìm hiểu nhóm đã khát quát và nêu rõ được bài toán Digit Recognizer, trình bày được các hoạt động của các mô hình KNN, Random Forest. Một số thao tác tiền xử lý dữ liệu như xóa các cột có giá trị bằng 0. Qua đó áp dụng vào giải quyết bài toán với việc huấn luyện tập train và thay đổi các tham số để xem xét sự thay đổi của hiệu suất:
+  
+  - Thứ nhất, với thuật toán KNN. Sử dụng k-Fold Cross-Validation để tìm ra k phù hợp và tìm được k=5. Nhưng khi ta thay đổi k=1 nhận thấy hiệu suất được cải thiện tốt hơn. Vậy k-fold Cross-Validation không hẳn là tốt nhất trong mọi trường hợp.
+  
+  - Thứ hai, với thuật toán Random Forest khi ta thay đổi ntree cũng như thay đổi độ lớn của tập mà ta đưa vào huấn luyện thì kết quả khớp là 100%.
+  
+  - Thứ ba, nhóm sử dụng độ đo Confusion Matrix cho bài toán này. Qua đó đánh giá quá trình huấn luyện cũng như dự đoán một cách rõ ràng và hiệu quả.
+  
+	- Từ các kết quả ta có thể thấy thuật toán KNN là thuật toán cho ta kết quả tốt nhất(97,01% với k=1) nhưng đồng thời thời gian chạy của thuật toán khá lâu.
+	
+	- Thuật toán KNN là thuật toán không quá khó nhưng đem lại hiệu suất cao. 
+	
+	- Nếu có thêm thời gian và các nguồn lực khác, nhóm sẽ thử nghiệm và tìm hiểu thêm về các thuật toán khác như: SVM, CNN, Neural Network(NN).
+	
+### **7. Tài liệu tham khảo**
+
+[1] Digit Recognizer Learn computer vision fundamentals with the famous MNIST datahttps://www.kaggle.com/c/digit-recognizer
+
+[2] Aditya S Nakate, Digit Recognizer using Random Forest Algorithm,   https://rpubs.com/Adityanakate/240343, 7 January 2017
+
+[3] https://www.rdocumentation.org/
+
+[4] Kashish
+, KNN vs Decision Tree vs Random Forest for handwritten digit recognition, https://medium.com/analytics-vidhya/knn-vs-decision-tree-vs-random-forest-for-handwritten-digit-recognition-470e864c75bc , Apr 17 2020
